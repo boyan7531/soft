@@ -1,0 +1,30 @@
+name: Continuous Deployment
+
+on:
+  workflow_run:
+    workflows: ["softuni tutorial"]  # Make sure this matches your CI workflow name
+    types:
+      - completed
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}  # Only run if CI passed
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18  # Change if your project requires a different version
+
+      - name: Install dependencies
+        run: npm install  # Change if using yarn or pnpm
+
+      - name: Deploy to Render
+        uses: johnbeynon/render-deploy-action@v0.0.8
+        with:
+          service-id: ${{ secrets.RENDER_SERVICE_ID }}
+          api-key: ${{ secrets.RENDER_API_KEY }}
